@@ -53,7 +53,7 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     builder.append("(fun ").append(stmt.name.lexeme()).append("(");
 
     for (Token param : stmt.params) {
-      if (param != stmt.params.get(0)) {
+      if (param != stmt.params.getFirst()) {
         builder.append(" ");
       }
       builder.append(param.lexeme());
@@ -195,17 +195,13 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
   private void transform(StringBuilder builder, Object... parts) {
     for (Object part : parts) {
       builder.append(" ");
-      if (part instanceof Expr) {
-        builder.append(((Expr) part).accept(this));
-      } else if (part instanceof Stmt) {
-        builder.append(((Stmt) part).accept(this));
-      } else if (part instanceof Token) {
-        builder.append(((Token) part).lexeme());
-      } else if (part instanceof List) {
-        transform(builder, ((List<?>) part).toArray());
-      } else {
-        builder.append(part);
-      }
+        switch (part) {
+            case Expr expr -> builder.append(expr.accept(this));
+            case Stmt stmt -> builder.append(stmt.accept(this));
+            case Token token -> builder.append(token.lexeme());
+            case List<?> list -> transform(builder, list.toArray());
+            default -> builder.append(part);
+        }
     }
   }
 }
